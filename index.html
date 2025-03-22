@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Para alita 🌻</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: radial-gradient(circle, #000000 0%, #1a1a1a 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #message {
+            position: absolute;
+            color: #ff9ff3;
+            font-family: 'Dancing Script', cursive;
+            font-size: 5em;
+            text-shadow: 0 0 15px #ff69b4, 0 0 30px #ff69b4;
+            animation: glow 2s ease-in-out infinite;
+            z-index: 3;
+        }
+
+        @keyframes glow {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 1; text-shadow: 0 0 20px #ff69b4, 0 0 40px #ff69b4; }
+        }
+
+        canvas {
+            position: absolute;
+            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.3));
+        }
+    </style>
+</head>
+<body>
+    <h1 id="message">Te amo mucho Alita 🌻</h1>
+    <canvas id="sunflower"></canvas>
+    <script>
+        const canvas = document.getElementById('sunflower');
+        const ctx = canvas.getContext('2d');
+
+        // Configuración responsiva
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        class Sunflower {
+            constructor() {
+                this.petalAngle = 0;
+                this.seedPhase = 0;
+            }
+
+            drawCenter() {
+                // Base del centro
+                ctx.beginPath();
+                ctx.arc(canvas.width/2, canvas.height/2, 80, 0, Math.PI * 2);
+                ctx.fillStyle = '#2b1a0f';
+                ctx.shadowColor = '#ffd700';
+                ctx.shadowBlur = 20;
+                ctx.fill();
+
+                // Semillas en espiral áurea
+                const phi = 137.508 * (Math.PI/180);
+                for(let i = 0; i < 250; i++) {
+                    const r = 5 * Math.sqrt(i);
+                    const theta = i * phi + this.seedPhase;
+                    const x = r * Math.cos(theta) + canvas.width/2;
+                    const y = r * Math.sin(theta) + canvas.height/2;
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+                    ctx.fillStyle = `hsl(${40 + i%20}, 70%, ${50 + Math.sin(Date.now()/200 + i)*10}%)`;
+                    ctx.fill();
+                }
+                this.seedPhase += 0.02;
+            }
+
+            drawPetals() {
+                ctx.shadowColor = 'rgba(255, 215, 0, 0.5)';
+                ctx.shadowBlur = 25;
+                ctx.strokeStyle = '#ffd700';
+                ctx.fillStyle = 'rgba(255, 225, 50, 0.4)';
+
+                const petalCount = 24;
+                const baseRadius = 150;
+                const petalLength = 100;
+
+                for(let i = 0; i < petalCount; i++) {
+                    const angle = (i * 360/petalCount) * Math.PI/180 + this.petalAngle;
+                    const wave = Math.sin(Date.now()/300 + angle) * 0.3 + 1;
+
+                    // Forma del pétalo
+                    ctx.beginPath();
+                    ctx.ellipse(
+                        canvas.width/2 + Math.cos(angle) * baseRadius * wave,
+                        canvas.height/2 + Math.sin(angle) * baseRadius * wave,
+                        petalLength * wave,
+                        25,
+                        angle,
+                        0,
+                        Math.PI * 2
+                    );
+                    ctx.fill();
+                    ctx.stroke();
+                }
+                this.petalAngle += 0.005;
+            }
+        }
+
+        // Sistema de partículas
+        class Particles {
+            constructor() {
+                this.particles = [];
+            }
+
+            addParticle() {
+                if(Math.random() < 0.3) {
+                    this.particles.push({
+                        x: canvas.width/2 + Math.cos(Math.random() * Math.PI*2) * 200,
+                        y: canvas.height/2 + Math.sin(Math.random() * Math.PI*2) * 200,
+                        size: Math.random() * 3 + 1,
+                        life: 1
+                    });
+                }
+            }
+
+            draw() {
+                this.particles.forEach((p, i) => {
+                    p.x += (Math.random() - 0.5) * 0.5;
+                    p.y += (Math.random() - 0.5) * 0.5;
+                    p.life -= 0.01;
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `hsla(${Math.random()*60 + 40}, 100%, 50%, ${p.life})`;
+                    ctx.fill();
+
+                    if(p.life <= 0) this.particles.splice(i, 1);
+                });
+            }
+        }
+
+        // Animación principal
+        const sunflower = new Sunflower();
+        const particles = new Particles();
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            sunflower.drawPetals();
+            sunflower.drawCenter();
+            particles.addParticle();
+            particles.draw();
+
+            requestAnimationFrame(animate);
+        }
+
+        // Efecto de carga
+        canvas.style.opacity = 0;
+        setTimeout(() => {
+            canvas.style.transition = 'opacity 2s';
+            canvas.style.opacity = '1';
+            animate();
+        }, 500);
+    </script>
+</body>
+</html>
